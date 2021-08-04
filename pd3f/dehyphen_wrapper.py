@@ -4,16 +4,7 @@
 
 from functools import lru_cache
 
-from joblib import Memory
-
 from dehyphen import FlairScorer
-
-
-# cache max 100mb
-memory = Memory(
-    "~/.cache/pd3f/dehyphen", verbose=0, compress=5, bytes_limit=100 * 1000 * 1000
-)
-
 
 scorer = None
 
@@ -31,19 +22,19 @@ def get_scorer(lang):
     return scorer
 
 
-@memory.cache
+@lru_cache(max_size=1024 * 1024)
 def dehyphen_paragraph(lines, lang):
     scorer = get_scorer(lang)
     return scorer.dehyphen_paragraph(lines)
 
 
-@memory.cache
+@lru_cache(max_size=1024 * 1024)
 def is_split_paragraph(p1, p2, lang):
     scorer = get_scorer(lang)
     return scorer.is_split_paragraph(p1, p2)
 
 
-@memory.cache
+@lru_cache(max_size=1024 * 1024)
 def newline_or_not(l1, l2, lang):
     """Decide whether to add a newline or not.
     """
