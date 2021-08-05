@@ -2,9 +2,8 @@
 """
 
 
-from functools import lru_cache
-
 from dehyphen import FlairScorer
+
 
 scorer = None
 
@@ -22,19 +21,16 @@ def get_scorer(lang):
     return scorer
 
 
-@lru_cache(max_size=1024 * 1024)
 def dehyphen_paragraph(lines, lang):
     scorer = get_scorer(lang)
     return scorer.dehyphen_paragraph(lines)
 
 
-@lru_cache(max_size=1024 * 1024)
 def is_split_paragraph(p1, p2, lang):
     scorer = get_scorer(lang)
     return scorer.is_split_paragraph(p1, p2)
 
 
-@lru_cache(max_size=1024 * 1024)
 def newline_or_not(l1, l2, lang):
     """Decide whether to add a newline or not.
     """
@@ -51,7 +47,6 @@ def newline_or_not(l1, l2, lang):
     return best_score_idx != 2
 
 
-@lru_cache
 def single_score(text, lang):
     scorer = get_scorer(lang)
     # Flair does not work with only one char, thus this special case
