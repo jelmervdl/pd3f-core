@@ -9,19 +9,17 @@ from pathlib import Path
 
 from parsr_client import ParsrClient as client
 
-from .utils import update_dict, write_dict
+from .utils import merge_dict, write_dict
 
 logger = logging.getLogger(__name__)
 
+with importlib.resources.path("pd3f", "pd3fConfig.json") as cfg_path:
+    config_template = json.loads(cfg_path.read_text())
+
 
 def setup_config(config, adjust_cleaner_config, check_tables, fast):
-    """
-
-    """
     # update base config of parsr
-    with importlib.resources.path("pd3f", "pd3fConfig.json") as cfg_path:
-        jdata = json.loads(cfg_path.read_text())
-    jdata = update_dict(jdata, config)
+    jdata = merge_dict(config_template, config)
 
     # Update parsr cleaner config since it's more complicated.
     # The cleaner consists of a pipeline, so we first have to find the matching module.

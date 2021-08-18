@@ -6,17 +6,19 @@ from collections import Iterable
 from collections.abc import Mapping
 
 
-def update_dict(d, u):
+def merge_dict(d, u):
     """Add u's keys to d. Override key in d if existing.
-    Similar to JavaScript's Object.assign (but changes d inplace as well).
+    Similar to JavaScript's Object.assign.
     """
-
-    for k, v in u.items():
-        if isinstance(v, Mapping):
-            d[k] = update_dict(d.get(k, {}), v)
-        else:
-            d[k] = v
-    return d
+    return {
+        **d,
+        **{
+            key: merge_dict(d.get(key, {}), value)
+                 if isinstance(val, Mapping)
+                 else val
+            for key, val in u.items()
+        }
+    }
 
 
 def write_dict(d, fn):
