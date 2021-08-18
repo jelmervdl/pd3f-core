@@ -56,7 +56,7 @@ class DocumentOutput:
                 return ele
         return None
 
-    def reverse_page_break(self):
+    def reverse_page_break(self, scorer):
         """join paragraphs that were split between pages
 
         gets complicated when footnotes are not re-ordered
@@ -82,7 +82,7 @@ class DocumentOutput:
                 #)
                 #continue
 
-            fixed = is_split_paragraph(last_element, next_element, self.lang)
+            fixed = is_split_paragraph(scorer, last_element, next_element)
             if fixed is None:
                 logger.debug("looks like a split paragraph")
                 continue
@@ -95,7 +95,7 @@ class DocumentOutput:
             self.data.remove(next_element)
             self.merged_elements[next_element.id] = last_element.id
 
-    def reverse_paragraph(self):
+    def reverse_paragraph(self, scorer):
         """join paragraphs that were split between pages
 
         gets complicated when footnotes are not re-ordered
@@ -122,7 +122,7 @@ class DocumentOutput:
                         #if (len(firstword) > 0) and ((firstword[0].islower()) or (firstword[0].isnumeric())):
                         if (len(firstword) > 0) and (firstword[0].islower()):
                             #print("****Start Call is_split_paragraph")
-                            fixed = is_split_paragraph(prevparagraph, nextparagraph, self.lang)
+                            fixed = is_split_paragraph(scorer, prevparagraph, nextparagraph)
                             if fixed is None:
                                 #print("looks like a split paragraph")
                                 prevparagraph = ele

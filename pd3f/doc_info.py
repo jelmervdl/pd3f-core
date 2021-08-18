@@ -127,7 +127,7 @@ def super_similiar(es1, es2, sim_factor=0.8, sim_box=0.6):
     return j_sim > sim_factor and b_sim > sim_box
 
 
-def remove_duplicates(page_items, lang):
+def remove_duplicates(scorer, page_items):
     results = [page_items[0]]
     for elements in page_items[1:]:
         cool = True
@@ -137,12 +137,8 @@ def remove_duplicates(page_items, lang):
             # only choose the best first one?
             if super_similiar(r, elements):
                 logger.debug("items are super similiar")
-                if single_score(only_text(r), lang) <= single_score(
-                    only_text(elements), lang
-                ):
-                    logger.debug(
-                        "okay, skipping here, the previous one got better / same score"
-                    )
+                if single_score(scorer, only_text(r)) <= single_score(scorer, only_text(elements)):
+                    logger.debug("okay, skipping here, the previous one got better / same score")
                     cool = False
                     break
                 else:

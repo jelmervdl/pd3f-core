@@ -12,7 +12,7 @@ from pathlib import Path
 
 from cleantext import clean, fix_bad_unicode
 
-from .dehyphen_wrapper import dehyphen_paragraph, newline_or_not
+from .dehyphen_wrapper import dehyphen_paragraph, newline_or_not, get_scorer
 from .doc_info import (
     DocumentInfo,
     avg_word_space,
@@ -170,6 +170,7 @@ class Export:
         ocrd=None,
         lang="multi",
         fast=False,
+        scorer=None
     ):
         if type(input_json) is str:
             self.input_data = json.loads(Path(input_json).read_text())
@@ -190,6 +191,8 @@ class Export:
         self.footnotes_last = footnotes_last
         self.ocrd = ocrd  # not used atm
         self.lang = lang  # name of Flair model (where the language is included)
+
+        self.scorer = scorer if scorer is not None else get_scorer(lang)
 
         if seperate_header_footer and any((remove_footer, remove_header)):
             raise ValueError(
@@ -236,8 +239,8 @@ class Export:
             footers.append(footer_per_page)
 
         if self.remove_duplicate_header_footer:
-            headers = remove_duplicates(headers, self.lang)
-            footers = remove_duplicates(footers, self.lang)
+            headers = remove_duplicates(self.scorer, headers)
+            footers = remove_duplicates(self.scorer, footers)
 
         cleaned_header, cleaned_footer, footnotes = [], [], []
         for idx_page, (header_per_page, footer_per_page) in enumerate(
@@ -323,9 +326,9 @@ class Export:
         self.footnotes_last and self.doc.reorder_footnotes()
 
         # only do if footnootes are reordered
-        self.footnotes_last and self.remove_hyphens and self.doc.reverse_page_break()
+        self.footnotes_last and self.remove_hyphens and self.doc.reverse_page_break(self.scorer)
 
-        self.doc.reverse_paragraph()
+        self.doc.reverse_paragraph(self.scorer)
 
     def add_linebreak(
         self, line, next_line, text_line, text_next_line, paragraph, num_lines
@@ -392,7 +395,7 @@ class Export:
 
         logger.debug("testing the lines: ")
         logger.debug(f"{text_line} {text_next_line}")
-        return newline_or_not(" ".join(text_line), " ".join(text_next_line), self.lang)
+        return newline_or_not(self.scorer, " ".join(text_line), " ".join(text_next_line))
 
     def line_to_words(self, line):
         words, fonts = [], []
@@ -522,7 +525,7 @@ class Export:
 
             if self.remove_hyphens:
                 #print("dehyphen START:")
-                lines = dehyphen_paragraph(lines, lang=self.lang)
+                lines = dehyphen_paragraph(self.scorer, lines)
                 #print("lines 4: ", lines)
 
             return Element(
